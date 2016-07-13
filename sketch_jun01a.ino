@@ -32,29 +32,7 @@ void PolivOn();
 
 void setup()
 {
-  
-  cli();//stop interrupts
-  //set timer1 interrupt at 1Hz
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for 1hz increments
-  OCR1A = 15624;// = (16*10^6) / (1*1024) - 1 (must be <65536)
-  // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS10 and CS12 bits for 1024 prescaler
-  TCCR1B |= (1 << CS12) | (1 << CS10);  
-  // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
-  
-  sei();//allow interrupts
-  
-  //no SPI
-  power_spi_disable();
-//  power_timer0_disable(); //used for TWI
-//  power_timer1_disable(); //no timers
-//  power_timer2_disable();
-  
+  init_timer();  
 _ABVAR_3_Poliv = 0;
 _ABVAR_2_PolivStart = 0;
 _ABVAR_1_EarthLiq = 0;
@@ -114,11 +92,7 @@ if ((timeToUpdate + 1000) < millis()){
   printTime();  
    timeToUpdate=millis();
 }
- // Sleep for 8 s with ADC module and BOD module off
-//    LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_ON);
- //LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_ON, TIMER0_ON,SPI_OFF, USART0_OFF, TWI_OFF);
- //delay(1000);
- sleepNow();
+sleepNow();
 }
 
 void printDigits(byte digits){
@@ -383,5 +357,29 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 1Hz toggles pin 13 (LED)
   }
   seconds+=1;
 
+}
+void init_timer(){
+  
+  cli();//stop interrupts
+  //set timer1 interrupt at 1Hz
+  TCCR1A = 0;// set entire TCCR1A register to 0
+  TCCR1B = 0;// same for TCCR1B
+  TCNT1  = 0;//initialize counter value to 0
+  // set compare match register for 1hz increments
+  OCR1A = 15624;// = (16*10^6) / (1*1024) - 1 (must be <65536)
+  // turn on CTC mode
+  TCCR1B |= (1 << WGM12);
+  // Set CS10 and CS12 bits for 1024 prescaler
+  TCCR1B |= (1 << CS12) | (1 << CS10);  
+  // enable timer compare interrupt
+  TIMSK1 |= (1 << OCIE1A);
+  
+  sei();//allow interrupts
+  
+  //no SPI
+  power_spi_disable();
+//  power_timer0_disable(); //used for TWI
+//  power_timer1_disable(); //no timers
+//  power_timer2_disable();
 }
 
